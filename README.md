@@ -26,7 +26,7 @@ This Jupyter Notebook implements an end-to-end *in silico* drug discovery pipeli
 [ ] Set NCBI Email: Have you entered a valid email address to prevent NCBI from blocking your literature search?
     Action: Update Entrez.email.
 
-[ ] Select PDB Strategy: Will you rely on Auto-Detection (riskier) or Manual Override (safer)?
+[ ] Select PDB Strategy: Will you rely on Auto-Detection (riskier, might not identify structure correctly especially with specific mutation) or Manual Override (safer)?
     Action: If Manual, set MANUAL_PDB_ID (e.g., '4JT6').
 
 **3. Docking & Structure (Step 5 - Critical)**
@@ -216,5 +216,6 @@ Evaluates pharmacokinetic properties (Absorption, Distribution, Metabolism, Excr
 3. **Dependencies:** If you see `ModuleNotFoundError`, re-run **Step 0**.
 
 ```
+
 
 ```
