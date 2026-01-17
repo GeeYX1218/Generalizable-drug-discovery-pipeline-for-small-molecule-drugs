@@ -117,3 +117,96 @@ BOX_SIZE = 20.0 # Size of the search space (Angstroms) EXHAUSTIVENESS = 8 # How 
         
         print(f"⚠ Warning: Ligand not found. Targeting Residue {TARGET_RESIDUE_ID}...")
 ```
+## 🚀 Pipeline Workflow & Example Outputs
+
+### **Step 0: Dependencies & Environment**
+
+* **Action:** Installs `rdkit`, `openbabel`, `autodock-vina`, and `chembl_webresource_client`.
+* **Note:** Must be run once at the start of the session.
+
+### **Step 1: Data Acquisition**
+
+Retrieves experimental bioactivity data from ChEMBL, filters for high potency (), cleans chemical structures, and removes duplicates.
+
+* **Outputs:**
+* `kras_inhibitors_cleaned.csv`: The curated dataset of potent inhibitors.
+* `kras_pic50_distribution.png`: Histogram showing the potency spread of the dataset.
+
+
+
+### **Step 2: SAR & Scaffold Analysis**
+
+Performs Bemis-Murcko scaffold decomposition to identify "privileged scaffolds" (core structures that yield high potency).
+
+* **Outputs:**
+* `kras_scaffold_analysis.csv`: List of scaffolds ranked by frequency and potency.
+* `kras_sar_analysis.csv`: Extended dataset with molecular descriptors (MW, LogP, TPSA).
+* `kras_chemical_space_pca.png`: PCA plot visualizing chemical diversity.
+* `kras_physicochemical_properties.png`: Violin plots of Lipinski properties.
+* `kras_top_scaffolds_potency.png`: Bar chart of the best-performing scaffolds.
+
+
+
+### **Step 3: Genomic & Structural Context**
+
+Searches RCSB PDB for available crystal structures and PubMed for literature on resistance mechanisms.
+
+* **Outputs:**
+* `kras_structural_analysis.json`: Metadata on the best available PDB structure (resolution, ligands).
+* `kras_literature_findings.txt`: Abstracts of relevant papers (e.g., "KRAS G12D inhibitors").
+
+
+
+### **Step 4: Generative Design**
+
+Uses biochemical mutation strategies (bioisosteric replacement, ring modification) on the top scaffolds from Step 2 to generate novel analogs. Filters for drug-likeness (QED) and Synthetic Accessibility (SA).
+
+* **Outputs:**
+* `kras_selected_seeds.csv`: The parent molecules used for generation.
+* `kras_generated_candidates.csv`: All valid generated molecules.
+* `kras_top20_generated_candidates.csv`: The top 20 candidates ranked by combined score.
+* `kras_top20_structures.png`: Grid image of the top 20 novel structures.
+* `kras_generation_pca/tsne.png`: Plots showing where new candidates sit in chemical space relative to known inhibitors.
+
+
+
+### **Step 5: Virtual Screening (Docking)**
+
+Prepares the receptor (PDB) and ligands (PDBQT), then runs AutoDock Vina to predict binding affinity (kcal/mol).
+
+* **Outputs:**
+* `kras_docking_results.csv`: Ranked list of candidates by binding affinity.
+* `kras_docking_scores.png`: Bar chart of binding energies.
+
+
+
+### **Step 6: Machine Learning Prediction**
+
+Trains a Random Forest regressor on the ChEMBL data (from Step 1) to predict the  of the generated candidates (from Step 4) as a secondary validation.
+
+* **Outputs:**
+* `kras_candidate_predictions.csv`: ML-predicted potency values.
+* `model_performance.png`: Actual vs. Predicted plot for the test set.
+* `ml_docking_comparison.png`: Correlation plot between ML predictions and Docking scores.
+
+
+
+### **Step 7: ADME/Tox & Final Selection**
+
+Evaluates pharmacokinetic properties (Absorption, Distribution, Metabolism, Excretion) and toxicity risks.
+
+* **Outputs:**
+* `kras_admet_analysis.csv`: Predicted ADMET properties.
+* `kras_final_candidates.csv`: The final "Hit" list after all filters.
+* `kras_candidate_radar_plot.png`: Multi-parameter visualization of the top candidates.
+
+
+
+---
+
+## ⚠️ Troubleshooting & Notes
+
+1. **Standalone Execution:** If you run steps out of order (e.g., Step 4 without running Step 2), the script attempts to load files from the `results/` folder. Ensure the filename prefixes match your `TARGET_NAME`.
+2. **PDB Download:** If Step 5 fails to download a PDB, manually upload a `.pdb` file to the `workflow/data` folder and the script will auto-detect it.
+3. **Dependencies:** If you see `ModuleNotFoundError`, re-run **Step 0**.
+
